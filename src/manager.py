@@ -1,3 +1,5 @@
+from tomlkit import datetime
+
 from src.models import Apartment, Bill, Parameters, Tenant, TenantSettlement, Transfer, ApartmentSettlement
 from typing import List, Tuple
 
@@ -114,35 +116,89 @@ class Manager:
         if apartment_key not in self.apartments:
             raise ValueError("Apartment key does not exist")
         return any([bill for bill in self.bills if bill.apartment == apartment_key and bill.settlement_year == year and bill.settlement_month == month])
-    def validate_transfer(self, amount_pln: float) -> dict:
-        """
-        Validate transfer amount against extreme value limits
+    # ===== FEATURE A: Transfer Validation =====
+def validate_transfer(self, amount_pln: float) -> dict:
+    """
+    Validate transfer amount against extreme value limits
+    
+    Args:
+        amount_pln: Transfer amount in PLN
         
-        Args:
-            amount_pln: Transfer amount in PLN
-            
-        Returns:
-            Dictionary with validation result:
-            {
-                'is_valid': bool,
-                'errors': list of error messages
-            }
-        """
-        errors = []
-        
-        # Check for negative
-        if amount_pln < 0:
-            errors.append(f"Transfer amount cannot be negative: {amount_pln}")
-        
-        # Check minimum
-        if amount_pln < self.min_transfer_amount:
-            errors.append(f"Transfer amount {amount_pln} is below minimum {self.min_transfer_amount}")
-        
-        # Check maximum
-        if amount_pln > self.max_transfer_amount:
-            errors.append(f"Transfer amount {amount_pln} exceeds maximum {self.max_transfer_amount}")
-        
-        return {
-            'is_valid': len(errors) == 0,
-            'errors': errors
+    Returns:
+        Dictionary with validation result:
+        {
+            'is_valid': bool,
+            'errors': list of error messages
         }
+    """
+    errors = []
+    
+    # Check for negative
+    if amount_pln < 0:
+        errors.append(f"Transfer amount cannot be negative: {amount_pln}")
+    
+    # Check minimum
+    if amount_pln < self.min_transfer_amount:
+        errors.append(f"Transfer amount {amount_pln} is below minimum {self.min_transfer_amount}")
+    
+    # Check maximum
+    if amount_pln > self.max_transfer_amount:
+        errors.append(f"Transfer amount {amount_pln} exceeds maximum {self.max_transfer_amount}")
+    
+    return {
+        'is_valid': len(errors) == 0,
+        'errors': errors
+    }
+def validate_transfer_assignment(self, tenant: str, settlement_year: int, settlement_month: int) -> dict:
+    """Validate that transfer is assigned to existing tenant"""
+    errors = []
+    if tenant not in self.tenants:
+        errors.append(f"Tenant '{tenant}' not found in system")
+    return {
+        'is_valid': len(errors) == 0,
+        'errors': errors
+    }
+    
+def validate_transfer_period(self, tenant: str, settlement_year: int, settlement_month: int) -> dict:
+    """Validate that transfer year is within tenant's agreement period"""
+    errors = []
+    if tenant not in self.tenants:
+        errors.append(f"Tenant '{tenant}' not found in system")
+        return {'is_valid': False, 'errors': errors}
+    
+    tenant_obj = self.tenants[tenant]
+    agreement_from = datetime.strptime(tenant_obj.date_agreement_from, "%Y-%m-%d")
+    agreement_to = datetime.strptime(tenant_obj.date_agreement_to, "%Y-%m-%d")
+    
+    if not (agreement_from.year <= settlement_year <= agreement_to.year):
+        errors.append(
+            f"Transfer year {settlement_year} is outside agreement period "
+            f"({agreement_from.year}-{agreement_to.year})"
+        )
+    
+    return {
+        'is_valid': len(errors) == 0,
+        'errors': errors
+    }
+
+def validate_all_transfers(self) -> list:
+    """Validate all transfers in the system"""
+    errors = []
+    for transfer in self.transfers:
+        if transfer.tenant not in self.tenants:
+            errors.append(f"Transfer references non-existent tenant: {transfer.tenant}")
+            continue
+        
+        if transfer.settlement_year is not None:
+            tenant_obj = self.tenants[transfer.tenant]
+            agreement_from = datetime.strptime(tenant_obj.date_agreement_from, "%Y-%m-%d")
+            agreement_to = datetime.strptime(tenant_obj.date_agreement_to, "%Y-%m-%d")
+            
+            if not (agreement_from.year <= transfer.settlement_year <= agreement_to.year):
+                errors.append(
+                    f"Transfer for tenant {tenant_obj.name} "
+                    f"(year {transfer.settlement_year}) is outside agreement period "
+                    f"({agreement_from.year}-{agreement_to.year})"
+                )
+    
+    return errors
