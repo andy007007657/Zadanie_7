@@ -1,0 +1,27 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.12, pytest-9.0.2, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/andy007007/Documents/Zadanie 7/Zadanie_7
+plugins: anyio-4.12.1, typeguard-4.4.4
+collecting ... collected 18 items
+
+tests/test_complex_integration.py::test_apartment_costs PASSED           [  5%]
+tests/test_complex_integration.py::test_apartment_costs_with_optional_parameters PASSED [ 11%]
+tests/test_complex_integration.py::test_settlement_creation PASSED       [ 16%]
+tests/test_complex_integration.py::test_tenants_settlements_creation PASSED [ 22%]
+tests/test_functional.py::test_settlement_due_between_tanants_and_apartment PASSED [ 27%]
+tests/test_functional.py::test_debtors_calculation PASSED                [ 33%]
+tests/test_functional.py::test_tax_calculation PASSED                    [ 38%]
+tests/test_functional.py::test_deposits_calculation PASSED               [ 44%]
+tests/test_functional.py::test_annual_balance_calculation PASSED         [ 50%]
+tests/test_functional.py::test_apartment_has_any_bills PASSED            [ 55%]
+tests/test_integration.py::test_load_data PASSED                         [ 61%]
+tests/test_integration.py::test_tenants_in_manager PASSED                [ 66%]
+tests/test_integration.py::test_if_tenants_have_valid_apartment_keys PASSED [ 72%]
+tests/test_performance.py::test_search_for_apartment_large_dataset PASSED [ 77%]
+tests/test_unit.py::test_apartment_fields PASSED                         [ 83%]
+tests/test_unit.py::test_apartment_from_dict PASSED                      [ 88%]
+tests/test_unit.py::test_tenant_fields PASSED                            [ 94%]
+tests/test_unit.py::test_tenant_from_dict PASSED                         [100%]
+
+============================== 18 passed in 0.62s ==============================
