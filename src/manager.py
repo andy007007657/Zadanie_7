@@ -3,8 +3,10 @@ from typing import List, Tuple
 
 class Manager:
     def __init__(self, parameters: Parameters):
+        
         self.parameters = parameters 
-
+        self.min_transfer_amount = 0.01
+        self.max_transfer_amount = 100_000.0
         self.apartments = {}
         self.tenants = {}
         self.transfers = []
@@ -112,3 +114,4 @@ class Manager:
         if apartment_key not in self.apartments:
             raise ValueError("Apartment key does not exist")
         return any([bill for bill in self.bills if bill.apartment == apartment_key and bill.settlement_year == year and bill.settlement_month == month])
+    
