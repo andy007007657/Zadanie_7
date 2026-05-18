@@ -1,0 +1,10 @@
+{
+    "blacklist-1": {
+        "name": "Jan Nowak",
+        "reason": "Nieuregulowane zaległości czynszowe z poprzedniego najmu"
+    },
+    "blacklist-2": {
+        "name": "Piotr Wiśniewski",
+        "reason": "Zgłoszone szkody w lokalu"
+    }
+}
