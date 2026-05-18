@@ -102,3 +102,15 @@ class TenantSettlement(BaseModel):
     total_due_pln: float
     total_transfers_pln: float = 0.0
     balance_pln: float = 0.0
+
+class BlacklistEntry(BaseModel):
+    name: str
+    reason: str
+    
+    @staticmethod
+    def from_json_file(file_path: str) -> List['BlacklistEntry']:
+        data = None
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+        assert isinstance(data, list), "Expected a list of blacklist entries"
+        return [BlacklistEntry(**entry) for entry in data]
