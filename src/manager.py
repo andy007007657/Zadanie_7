@@ -1,6 +1,6 @@
 from tomlkit import datetime
 
-from src.models import Apartment, Bill, Parameters, Tenant, TenantSettlement, Transfer, ApartmentSettlement
+from src.models import Apartment, Bill, BlacklistEntry, Parameters, Tenant, TenantSettlement, Transfer, ApartmentSettlement
 from typing import List, Tuple
 
 class Manager:
@@ -13,6 +13,7 @@ class Manager:
         self.tenants = {}
         self.transfers = []
         self.bills = []
+        self.blacklist = []
        
         self.load_data()
 
@@ -116,13 +117,53 @@ class Manager:
         if apartment_key not in self.apartments:
             raise ValueError("Apartment key does not exist")
         return any([bill for bill in self.bills if bill.apartment == apartment_key and bill.settlement_year == year and bill.settlement_month == month])
-    # ===== FEATURE A: Transfer Validation =====
-def validate_transfer(self, amount_pln: float) -> dict:
-    """
-    Validate transfer amount against extreme value limits
     
-    Args:
-        amount_pln: Transfer amount in PLN
+    def load_blacklist(self):
+        self.blacklist = BlacklistEntry.from_json_file(self.parameters.blacklist_json_path)
+    
+    def is_blacklisted(self, tenant_name: str) -> bool:
+        if len(self.blacklist) == 0:
+            return False
+        for entry in self.blacklist:
+            if entry.name == tenant_name:
+                return True
+        return False
+    
+    def get_blacklist_entry(self, tenant_name: str) -> BlacklistEntry | None:
+        for entry in self.blacklist:
+            if entry.name == tenant_name:
+                return entry
+        return None
+    
+    def check_blacklist(self, tenant_name: str) -> Tuple[bool, str]:
+        entry = self.get_blacklist_entry(tenant_name)
+        if entry:
+            return (True, entry.reason)
+        return (False, "")
+    
+    def validate_transfer(self, amount_pln: float) -> dict:
+        """
+        Validate transfer amount against extreme value limits
+        
+        Args:
+            amount_pln: Transfer amount in PLN
+            
+        Returns:
+            Dictionary with validation result:
+            {
+                'is_valid': bool,
+                'errors': list of error messages
+            }
+        """
+        errors = []
+        
+        # Check for negative
+        if amount_pln < 0:
+            errors.append(f"Transfer amount cannot be negative: {amount_pln}")
+        
+        # Check minimum
+        if amount_pln < self.min_transfer_amount:
+            errors.append(f"Transfer amount {amount_pln} is below minimum {self.min_transfer_amount}")
         
     Returns:
         Dictionary with validation result:

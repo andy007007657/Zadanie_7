@@ -9,6 +9,7 @@ class Parameters(BaseModel):
     tenants_json_path: str = 'data/tenants.json'
     transfers_json_path: str = 'data/transfers.json'
     bills_json_path: str = 'data/bills.json'
+    blacklist_json_path: str = 'data/blacklist.json'
 
 
 class Room(BaseModel):
@@ -112,5 +113,8 @@ class BlacklistEntry(BaseModel):
         data = None
         with open(file_path, 'r') as file:
             data = json.load(file)
-        assert isinstance(data, list), "Expected a list of blacklist entries"
-        return [BlacklistEntry(**entry) for entry in data]
+        if isinstance(data, dict):
+            return [BlacklistEntry(**entry) for entry in data.values()]
+        elif isinstance(data, list):
+            return [BlacklistEntry(**entry) for entry in data]
+        return []
